@@ -26,6 +26,8 @@ from finagent.prompt import (prepare_latest_market_intelligence_params,
                              prepared_tools_params)
 from finagent.tools import StrategyAgents
 
+from .sentiment_analysis import *
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Main')
     parser.add_argument("--config", default=os.path.join(ROOT, "configs", "exp", "trading", "AAPL.py"), help="config file path")
@@ -259,6 +261,8 @@ def run_step(cfg, state, info, plots, memory, provider, diverse_query, strategy_
                                                                       diverse_query = diverse_query,
                                                                       exp_path = exp_path,
                                                                       save_dir = save_dir)
+    
+    sentiment_analysis.analysis(latest_market_intelligence, )
 
     # query past market intelligence
     prepared_latest_market_intelligence_params = prepare_latest_market_intelligence_params(state=state,
