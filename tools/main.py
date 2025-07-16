@@ -26,7 +26,7 @@ from finagent.prompt import (prepare_latest_market_intelligence_params,
                              prepared_tools_params)
 from finagent.tools import StrategyAgents
 
-from .sentiment_analysis import *
+from tools.sentiment_analysis import *
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Main')
@@ -262,7 +262,11 @@ def run_step(cfg, state, info, plots, memory, provider, diverse_query, strategy_
                                                                       exp_path = exp_path,
                                                                       save_dir = save_dir)
     
-    sentiment_analysis.analysis(latest_market_intelligence, )
+    # get latest market intelligence
+    latest_market_intelligence = get_latest_market_intellgence(latest_market_intelligence_summary_res, type="raw_data")
+
+    # sentiment analysis
+    analysis(latest_market_intelligence, )
 
     # query past market intelligence
     prepared_latest_market_intelligence_params = prepare_latest_market_intelligence_params(state=state,
