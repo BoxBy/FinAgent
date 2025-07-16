@@ -262,7 +262,7 @@ def run_step(cfg, state, info, plots, memory, provider, diverse_query, strategy_
                                                                       exp_path = exp_path,
                                                                       save_dir = save_dir)
     
-    sentiment_analysis.analysis(latest_market_intelligence, )
+    sentiment_analysis.analysis(latest_market_intelligence_summary_res)
 
     # query past market intelligence
     prepared_latest_market_intelligence_params = prepare_latest_market_intelligence_params(state=state,
