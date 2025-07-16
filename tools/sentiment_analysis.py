@@ -1,7 +1,7 @@
 from typing import Union, List
 from finagent.prompt import custom
 
-def analysis(latest_market_intelligence, ): # 받아야 하는 인자가 있다면 추가하세요
+def analysis(latest_market_intelligence_summary_res, type="raw_data"): # 받아야 하는 인자가 있다면 추가하세요
     '''
     알고있어야 하는것들
     이 agent는 real-time이 아닌것으로 보입니다(딥하게 안봐서 틀릴수도 있음)
@@ -10,9 +10,10 @@ def analysis(latest_market_intelligence, ): # 받아야 하는 인자가 있다�
     
     심지어 Agent는 Class도 아닙니다
     '''
+
+    # get latest market intelligence
+    latest_market_intelligence = get_latest_market_intellgence(latest_market_intelligence_summary_res, type)
     print(latest_market_intelligence)
-    
-    
     
     # Prompt는 custom.Prompt를 상속받아 작성하면 됨
     # model 호출은 FinAgent/finagent/prompt/custom.py - get_response_dict(L105)에 있습니다
