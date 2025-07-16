@@ -10,6 +10,7 @@ pandas_market_calendars
 polygon-api-client
 mplfinance
 python-dotenv
+google-generativeai
 gym
 pandas_ta
 scikit-learn-extra
