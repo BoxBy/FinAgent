@@ -26,7 +26,7 @@ class StockDownloaderProcess(multiprocessing.Process):
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Download News')
-    parser.add_argument("--config", default=os.path.join(ROOT, "configs", "downloader", "news", "fmp_news_exp_cryptos.py"), help="download datasets config file path")
+    parser.add_argument("--config", default=os.path.join(ROOT, "configs", "downloader", "news", "yahoofinance_news_exp.py"), help="download datasets config file path")
     parser.add_argument(
         '--cfg-options',
         nargs='+',
