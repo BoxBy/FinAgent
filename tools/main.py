@@ -26,7 +26,7 @@ from finagent.prompt import (prepare_latest_market_intelligence_params,
                              prepared_tools_params)
 from finagent.tools import StrategyAgents
 
-from .sentiment_analysis import *
+from tools import sentiment_analysis
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Main')
@@ -187,10 +187,19 @@ def run(cfg, env, plots, memory, provider, diverse_query, strategy_agents,  exp_
                 state, reward, done, truncated, info = env.step(action)
             else:
                 break
+            
+    # class로 선언
 
     while True:
+        '''
+        만약 tuple:
+        time.stop() # 잘모름 4초정도?
+        trigger = sentiment_analysis.analysis() # emergency -> trigger
+        if trigger == False:
+            continue
+        '''
 
-        action = run_step(cfg,
+        action = run_step(cfg, # 이 코드가 이상한데, 이거는 주기적으로 돌아가는겁니다(ex: 1시간마다) <- 4초정도로 바꾸고 위에 if문을 0.1초쯤?으로 바꾸기
                           state,
                           info,
                           plots,
@@ -262,7 +271,9 @@ def run_step(cfg, state, info, plots, memory, provider, diverse_query, strategy_
                                                                       exp_path = exp_path,
                                                                       save_dir = save_dir)
     
-    sentiment_analysis.analysis(latest_market_intelligence, )
+    if sentiment_analysis.analysis(latest_market_intelligence_summary_res, provider, type="raw_data"):
+        return 
+        
 
     # query past market intelligence
     prepared_latest_market_intelligence_params = prepare_latest_market_intelligence_params(state=state,
