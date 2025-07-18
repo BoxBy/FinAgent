@@ -246,7 +246,7 @@ class Processor():
             "low",
             "close",
             "volume",
-            "adj_close"
+            # "adj_close"
         ]
 
         for stock in tqdm(stocks):
@@ -273,7 +273,7 @@ class Processor():
                     "Close": "close",
                     "Volume": "volume",
                     "Date": "timestamp",
-                    "Adj Close": "adj_close",
+                    # "Adj Close": "adj_close",
                 }
             else:
                 price_column_map = {
@@ -290,6 +290,9 @@ class Processor():
 
             price_df = price_df.rename(columns=price_column_map)[["timestamp"] + price_columns]
 
+            # 모든 price_columns를 숫자로 변환
+            price_df[price_columns] = price_df[price_columns].apply(pd.to_numeric, errors='coerce')
+            
             price_df["timestamp"] = pd.to_datetime(price_df["timestamp"])
             price_df = price_df[(price_df["timestamp"] >= start_date) & (price_df["timestamp"] < end_date)]
 
