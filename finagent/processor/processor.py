@@ -361,6 +361,10 @@ class Processor():
                 guidance_df["timestamp"] = pd.to_datetime(guidance_df["timestamp"]).apply(lambda x: x.strftime("%Y-%m-%d"))
                 guidances_df.append(guidance_df)
 
+            # Handle empty guidance list
+            if len(guidances_df) == 0:
+                continue
+                
             guidances_df = pd.concat(guidances_df)
 
             if self.if_parse_url:
@@ -451,6 +455,10 @@ class Processor():
                 news_df["timestamp"] = pd.to_datetime(news_df["timestamp"]).apply(lambda x: x.strftime("%Y-%m-%d"))
                 newses_df.append(news_df)
 
+            # Handle empty news list
+            if len(newses_df) == 0:
+                continue
+                
             newses_df = pd.concat(newses_df)
 
             if self.if_parse_url:
@@ -530,6 +538,10 @@ class Processor():
                 sentiment_df["timestamp"] = pd.to_datetime(sentiment_df["timestamp"]).apply(lambda x: x.strftime("%Y-%m-%d"))
                 sentiments_df.append(sentiment_df)
 
+            # Handle empty sentiment list
+            if len(sentiments_df) == 0:
+                continue
+                
             sentiments_df = pd.concat(sentiments_df)
 
             if self.if_parse_url:
@@ -570,6 +582,10 @@ class Processor():
             "inflationRate",
             "unemploymentRate",
         ]
+
+        # Handle empty economic list
+        if len(self.path_params["economic"]) == 0:
+            return
 
         type = self.path_params["economic"][0]["type"]
         path = self.path_params["economic"][0]["path"]

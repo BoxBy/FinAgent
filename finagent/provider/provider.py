@@ -33,7 +33,8 @@ PROVIDER_SETTING_COMP_MODEL = "comp_model"
 PROVIDER_SETTING_IS_AZURE = "is_azure"
 PROVIDER_SETTING_BASE_VAR = "base_var"       # Azure-speficic setting
 PROVIDER_SETTING_API_VERSION = "api_version" # Azure-speficic setting
-PROVIDER_SETTING_DEPLOYMENT_MAP = "models"   # Azure-speficic setting
+PROVIDER_SETTING_DEPLOYMENT_MAP = "models"
+PROVIDER_SETTING_BASE_URL = "base_url"       # Custom base URL setting
 
 @PROVIDER.register_module(force=True)
 class OpenAIProvider(LLMProvider, EmbeddingProvider):
@@ -94,8 +95,14 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
                 azure_endpoint = endpoint
             )
         else:
-            key = os.getenv(key_var_name)
-            self.client = OpenAI(api_key=key)
+            key = os.getenv(key_var_name) or "dummy-key"  # Some local servers don't require real keys
+            
+            # Check if custom base_url is provided
+            if PROVIDER_SETTING_BASE_URL in conf_dict:
+                base_url = conf_dict[PROVIDER_SETTING_BASE_URL]
+                self.client = OpenAI(api_key=key, base_url=base_url)
+            else:
+                self.client = OpenAI(api_key=key)
 
         self.embedding_model = conf_dict[PROVIDER_SETTING_EMB_MODEL]
         self.llm_model = conf_dict[PROVIDER_SETTING_COMP_MODEL]
@@ -248,17 +255,23 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
             embedding_dim = 1536
         elif self.embedding_model == "text-embedding-3-large":
             embedding_dim = 3072
+        elif self.embedding_model == "gemma-3-27b-it-qat":
+            # For local models, use a common embedding dimension
+            # This might need to be adjusted based on your local embedding setup
+            embedding_dim = 768
         else:
-            raise ValueError(f"Unknown embedding model: {self.embedding_model}")
+            # Default embedding dimension for unknown models
+            print(f"Warning: Unknown embedding model {self.embedding_model}, using default dimension 768")
+            embedding_dim = 768
         return embedding_dim
 
 
     def create_completion(
         self,
         messages: List[Dict[str, str]],
-        model: str | None = None,
+        model: Optional[str] = None,
         temperature: float = 1.0,
-        seed: int | None = 42,
+        seed: Optional[int] = 42,
         max_tokens: int = 4096,
     ) -> Tuple[str, Dict[str, int]]:
         """Create a chat completion using the OpenAI API
@@ -308,7 +321,7 @@ class OpenAIProvider(LLMProvider, EmbeddingProvider):
             messages: List[Dict[str, str]],
             model: str,
             temperature: float,
-            seed: int | None,
+            seed: Optional[int],
             max_tokens: int = 512,
         ) -> Tuple[str, Dict[str, int]]:
             

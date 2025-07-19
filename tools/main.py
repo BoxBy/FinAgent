@@ -270,9 +270,12 @@ def run_step(cfg, state, info, plots, memory, provider, diverse_query, strategy_
                                                                       diverse_query = diverse_query,
                                                                       exp_path = exp_path,
                                                                       save_dir = save_dir)
-    
-    if sentiment_analysis.analysis(latest_market_intelligence_summary_res, provider, type="raw_data"):
-        return 
+    # Check for emergency situation using sentiment analysis
+    is_emergency = sentiment_analysis.analysis(latest_market_intelligence_summary_res, provider, type="raw_data")
+    if is_emergency:
+        # Emergency situation detected - skip to decision making
+        print("Emergency situation detected - proceeding to decision making")
+        # Continue with normal flow (remove early return) 
         
 
     # query past market intelligence
@@ -284,12 +287,13 @@ def run_step(cfg, state, info, plots, memory, provider, diverse_query, strategy_
                                                                                         diverse_query=diverse_query)
     params.update(prepared_latest_market_intelligence_params)
 
-    # add latest market intelligence to memory
-    latest_market_intelligence_summary.add_to_memory(state=state,
-                                                     info=info,
-                                                     res=latest_market_intelligence_summary_res,
-                                                     memory=memory,
-                                                     provider=provider)
+    # add latest market intelligence to memory (skip if max_recent_steps is 0)
+    if cfg.memory.get("max_recent_steps", 5) > 0:
+        latest_market_intelligence_summary.add_to_memory(state=state,
+                                                         info=info,
+                                                         res=latest_market_intelligence_summary_res,
+                                                         memory=memory,
+                                                         provider=provider)
 
     # past market intelligence
     past_market_intelligence_summary_template = read_resource_file(cfg.train_past_market_intelligence_summary_template_path
@@ -328,12 +332,13 @@ def run_step(cfg, state, info, plots, memory, provider, diverse_query, strategy_
                                                                               diverse_query=diverse_query)
     params.update(prepared_low_level_reflection_params)
 
-    # add low level reflection to memory
-    low_level_reflection.add_to_memory(state=state,
-                                       info=info,
-                                       res = low_level_reflection_res,
-                                       memory=memory,
-                                       provider=provider)
+    # add low level reflection to memory (skip if max_recent_steps is 0)
+    if cfg.memory.get("max_recent_steps", 5) > 0:
+        low_level_reflection.add_to_memory(state=state,
+                                           info=info,
+                                           res = low_level_reflection_res,
+                                           memory=memory,
+                                           provider=provider)
 
     # plot trading
     if len(trading_records["date"]) <= 0:
@@ -375,12 +380,13 @@ def run_step(cfg, state, info, plots, memory, provider, diverse_query, strategy_
                                                                                  diverse_query=diverse_query)
     params.update(prepared_high_level_reflection_params)
 
-    # add high level reflection to memory
-    high_level_reflection.add_to_memory(state=state,
-                                        info=info,
-                                        res = high_level_reflection_res,
-                                        memory=memory,
-                                        provider=provider)
+    # add high level reflection to memory (skip if max_recent_steps is 0)
+    if cfg.memory.get("max_recent_steps", 5) > 0:
+        high_level_reflection.add_to_memory(state=state,
+                                            info=info,
+                                            res = high_level_reflection_res,
+                                            memory=memory,
+                                            provider=provider)
 
     # trader preference
     trader_preference = ASSET.get_trader(cfg.trader_preference)

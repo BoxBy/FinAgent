@@ -1,6 +1,7 @@
 {
 	"key_var" : "OA_OPENAI_KEY",
-	"emb_model": "text-embedding-3-large",
-	"comp_model": "gpt-4-vision-preview",
-	"is_azure": false
+	"emb_model": "gemma-3-27b-it-qat",
+	"comp_model": "gemma-3-27b-it-qat",
+	"is_azure": false,
+	"base_url": "http://localhost:8000/v1"
 }

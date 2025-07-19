@@ -353,7 +353,11 @@ def prepare_low_level_reflection_params(state: Dict,
     past_low_level_reflection_list = []
 
     for query_type, values in query_res.items():
-        query_items = values["query_items"]
+        # Handle case where values is a list (when top_k=0)
+        if isinstance(values, list):
+            query_items = values
+        else:
+            query_items = values["query_items"]
 
         type_list = []
 
@@ -416,7 +420,11 @@ def prepare_high_level_reflection_params(state: Dict,
     past_high_level_reflection_list = []
 
     for query_type, values in query_res.items():
-        query_items = values["query_items"]
+        # Handle case where values is a list (when top_k=0)
+        if isinstance(values, list):
+            query_items = values
+        else:
+            query_items = values["query_items"]
 
         type_list = []
 

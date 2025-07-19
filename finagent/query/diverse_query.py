@@ -24,6 +24,13 @@ class DiverseQuery():
                       top_k: int = None):
 
         top_k = top_k if top_k is not None else self.top_k
+        
+        # If top_k is 0, return empty results without embedding
+        if top_k == 0:
+            res = {}
+            for query_type in query_types:
+                res[query_type] = []
+            return res
 
         type = params["type"]
         symbol = params["symbol"]

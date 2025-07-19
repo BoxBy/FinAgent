@@ -25,7 +25,7 @@ long_term_next_date_range = 14
 look_forward_days = long_term_next_date_range
 look_back_days = long_term_past_date_range
 previous_action_look_back_days = 14
-top_k = 5
+top_k = 0  # Disable diverse query to avoid embedding issues
 
 train_latest_market_intelligence_summary_template_path = "res/prompts/template/train/trading/latest_market_intelligence_summary.html"
 train_past_market_intelligence_summary_template_path = "res/prompts/template/train/trading/past_market_intelligence_summary.html"
@@ -42,11 +42,11 @@ valid_decision_template_path = "res/prompts/template/valid/trading/decision.html
 dataset = dict(
     type="Dataset",
     root=root,
-    price_path="datasets/exp_stocks/price",
-    news_path="datasets/exp_stocks/news",
-    guidance_path="datasets/exp_stocks/guidance",
-    sentiment_path="datasets/exp_stocks/sentiment",
-    economics_path="datasets/exp_stocks/economic.parquet",
+    price_path="workdir/processed_day_major_tech/price",
+    news_path="workdir/processed_day_major_tech/news",
+    guidance_path="workdir/processed_day_major_tech/guidance",
+    sentiment_path="workdir/processed_day_major_tech/sentiment",
+    economics_path="workdir/processed_day_major_tech/economic.parquet",
     interval="1d",
     assets_path="configs/_asset_list_/exp_stocks.txt",
     workdir=workdir,
@@ -96,24 +96,24 @@ memory = dict(
     symbols=None,
     memory_path="memory",
     embedding_dim=None,
-    max_recent_steps=5,
+    max_recent_steps=0,  # Disable memory to avoid embedding issues
     workdir=workdir,
     tag=tag
 )
 
 latest_market_intelligence_summary = dict(
     type="LatestMarketIntelligenceSummaryTrading",
-    model = "gpt-4-1106-preview"
+    model = "gemma-3-27b-it-qat"
 )
 
 past_market_intelligence_summary = dict(
     type="PastMarketIntelligenceSummaryTrading",
-    model = "gpt-4-1106-preview"
+    model = "gemma-3-27b-it-qat"
 )
 
 low_level_reflection = dict(
     type="LowLevelReflectionTrading",
-    model = "gpt-4-vision-preview",
+    model = "gemma-3-27b-it-qat",
     short_term_past_date_range=short_term_past_date_range,
     medium_term_past_date_range=medium_term_past_date_range,
     long_term_past_date_range=long_term_past_date_range,
@@ -126,13 +126,13 @@ low_level_reflection = dict(
 
 high_level_reflection = dict(
     type="HighLevelReflectionTrading",
-    model = "gpt-4-vision-preview",
+    model = "gemma-3-27b-it-qat",
     previous_action_look_back_days=previous_action_look_back_days
 )
 
 decision = dict(
     type="DecisionTrading",
-    model = "gpt-4-1106-preview",
+    model = "gemma-3-27b-it-qat",
 )
 
 provider = dict(

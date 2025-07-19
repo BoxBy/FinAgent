@@ -79,7 +79,7 @@ class Prompt():
                     })
 
                 elif tag.name == "img":
-                    image_path = tag.attrs["src"]
+                    image_path = tag.attrs.get("src", None)
 
                     if image_path is None or not os.path.exists(image_path):
                         message["content"].append({

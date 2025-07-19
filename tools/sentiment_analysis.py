@@ -1,8 +1,7 @@
 from typing import Union, List, Dict, Any, Tuple
 from finagent.prompt import custom
 import logging
-import json   
-import re
+
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -10,101 +9,61 @@ logger = logging.getLogger(__name__)
 class SentimentAnalysisPrompt(custom.Prompt):
     "Sentiment Analysis를 위한 커스텀 프롬프트 클래스"
     def __init__(self, model="gpt-4preview"):
-        super().__init__(model=model)
+        super().__init__()
+        self.model = model
     
     def create_sentiment_analysis_prompt(self, market_intelligence: str) -> str:
-        #   분석을 위한 프롬프트 생성 
-        trigger_prompt = f"""
-        You are an event-driven financial analyst. Your TOP priority is to decide whether the provided news should be treated as a **market-triggering emergence event** (binary: 1 or 0). After making that judgment, provide supporting market analytics.
+    #   분석을 위한 프롬프트 생성        
+        prompt = f"""You are a financial sentiment analysis expert. 
+        Analyze the following market intelligence and provide sentiment analysis:
 
-        Return ONLY a valid JSON object with the exact fields shown below (no extra text).
-
-        {{
-        "emergence": int,                // 1 if this news is NEW, MATERIAL, and likely to TRIGGER short-term market repricing; else 0
-        "sentiment_score": float,        // -1 to 1
-        "market_momentum": string,       // "bullish", "neutral", or "bearish"
-        "impact_score": int,             // 0-100 potential market impact
-        "final_trading_signal": string,  // "BUY", "HOLD", or "SELL"
-        "reason": string                 // 2-3 sentences: why emergence? how sentiment & impact led to signal
-        }}
-
-        ----------------
-        How to judge **emergence** (trigger focus):
-
-        Set emergence = 1 ONLY if MOST of the following apply:
-        - **Materiality**: News could meaningfully affect valuation, liquidity, regulation, or operations.
-        - **Immediacy**: Near-term catalyst (effective now or within a short, market-relevant window).
-        - **Surprise vs Expectation**: Not widely expected, not just a routine or incremental update.
-        - **Actionability**: Traders would care NOW (earnings shock, guidance cut/raise, M&A announcement, regulatory approval/ban, fraud exposure, major macro policy shift).
-
-        Set emergence = 0 if:
-        - Already known, previously announced, or widely expected.
-        - Incremental commentary, opinion, or long-running story without new actionable development.
-        - Data lacks timing clarity or market linkage.
-
-        ----------------
-        Other fields (fill even if emergence=0):
-
-        1. Sentiment Score (-1..1): Tone of the development for the affected asset(s) or market.
-        2. Market Momentum: Short-term directional implication (bullish / neutral / bearish).
-        3. Impact Score (0..100): Potential magnitude of market influence (scope, credibility, timing).
-        4. Final Trading Signal: BUY / HOLD / SELL, integrating all above. Emergence=1 with high impact may tilt toward more decisive action.
-        5. Reason: Brief explanation tying together emergence judgment, sentiment, impact, and resulting signal.
-
-        ----------------
-        News Content:
+        Market Intelligence:
         {market_intelligence}
 
-        Respond ONLY with JSON.
-        """
-        return trigger_prompt
+        Please provide sentiment analysis in the following format:
+
+        <sentiment_analysis>
+        {{
+            overall_sentiment": positive/negative/neutral,confidence_score": 0.85,
+        key_factors":        factor1,
+                factor2,
+            factor3],
+            risk_level": "low/medium/high",
+        recommendation":buy/hold/sell",
+        summary":Brief summary of sentiment analysis"
+        }}
+        </sentiment_analysis>     """
+        return prompt
     
     def analyze_sentiment(self, market_intelligence: str, provider) -> Dict[str, Any]:
         # 감정 분석 실행     
         prompt = self.create_sentiment_analysis_prompt(market_intelligence)
-        response = self.get_response_dict(messages=prompt, provider=provider) # LLM 실행한다고 가정
-        emergence, sentiment, momentum, impact_score, signal, reason = extract_json_from_text(response)
-        result = {
-            "emergence": emergence,
-            "sentiment": sentiment,
-            "momentum": momentum,
-            "impact_score": impact_score,
-            "signal": signal,
-            "reason": reason
-        }
-
-        logger.info(f"Sentiment Analysis Result: {result}")
-
-        return result
-
-
-def extract_json_from_text(text: str) -> Tuple[float, str, int, str, str]:
-    """
-    Extract JSON fields from LLM response text.
-    Returns: sentiment (float), momentum (str), impact_score (int), signal (str), reason (str)
-    """
-
-    try:
-        data = json.loads(text)
-    except json.JSONDecodeError:
-        # 2. 정규식으로 {...} 부분만 추출
-        match = re.search(r"\{.*\}", text, flags=re.S)
-        if match:
-            snippet = match.group(0)
-            try:
-                data = json.loads(snippet)
-            except json.JSONDecodeError:
-                data = {}
-        else:
-            data = {}
-    emergence= int(data.get("emergence", 0))
-    sentiment = float(data.get("sentiment", 0.0))
-    momentum = str(data.get("momentum", "neutral"))
-    impact_score = int(data.get("impact_score", 0))
-    signal = str(data.get("signal", "HOLD"))
-    reason = str(data.get("reason", "No reason provided."))
-
-    return emergence, sentiment, momentum, impact_score, signal, reason
+        response = self.get_response_dict(messages=prompt, provider=provider, model=self.model) # LLM 실행한다고 가정
+        
+        # 응답 파싱
+        '''
+        if function_call 감지가 된다면 == emergency 상황이라는 뜻
+        decision.run()을 바로 돌려야 하므로, 관련된 인자를 전부 리턴해주면 됩니다
+        function all 부분만 try: except 하는거로
+        '''
+        # try:
+        #     import re
+        #     import json
+            
+        #     # <sentiment_analysis> 태그에서 JSON 추출
+        #     pattern = r'<sentiment_analysis>\s*(.*?)\s*</sentiment_analysis>'
+        #     match = re.search(pattern, response, re.DOTALL)
+            
+        #     if match:
+        #         sentiment_data = json.loads(match.group(1).strip())
+        #         return sentiment_data
+        #     else:
+        #         # 태그가 없는 경우 전체 응답을 파싱 시도
+        #         return {"raw_response": response, "error": "No sentiment analysis tags found"}
+                
+        # except Exception as e:
+        #     logger.error(f"Sentiment analysis parsing error: {str(e)}")
+        #     return {"error": f"Parsing failed: {str(e)}", "response": response}
 
 def get_latest_market_intelligence(latest_market_intelligence_summary_res, type="raw_data") -> Union[List, str]:
     '''최신 시장 정보와 뉴스를 가져와서 반환하는 함수
@@ -210,29 +169,38 @@ def get_sentiment_analysis_functions() -> List[Dict]:
 #             "status": "error" 
 #         }
         
-def analysis(latest_market_intelligence_summary_res, provider, type="raw_data") -> Tuple: # (boolean, Dict)
+def analysis(latest_market_intelligence_summary_res, provider, type="raw_data") -> bool:
     """Sentiment Analysis 메인 함수
     
     Args:
         latest_market_intelligence_summary_res: Latest market intelligence 결과
+        provider: LLM provider 인스턴스
         type: 데이터 타입 ("raw_data" 또는 "market_intelligence_summary")
     
     Returns:
-        boolean = 실행여부
-        Dict = decision.run()의 args들, boolean=False라면 None # 혹은 decision.run()의 인자를 전부 받아서 여기서 실행해도 됨
+        bool: True if emergency action needed, False otherwise
     """
-    # Get latest market intelligence
-    latest_market_intelligence = get_latest_market_intelligence(latest_market_intelligence_summary_res, type)
-    print(f"Market Intelligence: {latest_market_intelligence}")
-    
-    # Create sentiment analysis prompt and analyze
-    sentiment_analyzer = SentimentAnalysisPrompt()
-    sentiment_result = sentiment_analyzer.analyze_sentiment(latest_market_intelligence, provider)
-    sentiment_analysis_info =  {
-        type: "sentiment_analysis",
-        "market_intelligence": latest_market_intelligence,
-        "sentiment_result": sentiment_result,
-        "status":"success",
-    }
-
-    return sentiment_analysis_info, sentiment_result.get("emergence", 0) == 1  # emergence가 1이면 True, 아니면 False
+    try:
+        # Get latest market intelligence
+        latest_market_intelligence = get_latest_market_intelligence(latest_market_intelligence_summary_res, type)
+        print(f"Market Intelligence: {latest_market_intelligence}")
+        
+        # Create sentiment analysis prompt and analyze
+        sentiment_analyzer = SentimentAnalysisPrompt()
+        sentiment_result = sentiment_analyzer.analyze_sentiment(latest_market_intelligence, provider)
+        
+        # 간단한 로직으로 긴급 상황 판단 (실제로는 더 복잡한 로직이 필요)
+        # 예: 특정 키워드나 패턴이 있으면 긴급 상황으로 판단
+        emergency_keywords = ["crash", "crisis", "emergency", "urgent", "warning"]
+        if isinstance(latest_market_intelligence, str):
+            for keyword in emergency_keywords:
+                if keyword.lower() in latest_market_intelligence.lower():
+                    logger.warning(f"Emergency keyword detected: {keyword}")
+                    return True
+        
+        # 정상 상황
+        return False
+        
+    except Exception as e:
+        logger.error(f"Error in sentiment analysis: {str(e)}")
+        return False
